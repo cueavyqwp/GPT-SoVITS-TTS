@@ -27,7 +27,7 @@ def output_modifier( text : str ) -> str :
         path = os.path.join( output , file_name )
         if not os.path.exists( path ) :
             respones = requests.post( params[ "api" ] , json = { "text_language" : params[ "language" ] , "text" : text } )
-            assert respones.ok , f"request error: { respones.text }"
+            assert respones.ok , f"request error: { respones.status_code }"
             with open( path , "wb" ) as fp : fp.write( respones.content )
         text += f"<p><audio src='{ file_path }/{ file_name }' controls { 'autoplay' if params[ 'autoplay' ] else '' }></audio></p>"
     except :
