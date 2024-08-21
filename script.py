@@ -3,6 +3,8 @@ import hashlib
 import shutil
 import os
 
+from modules import shared
+
 import requests
 import gradio
 
@@ -16,6 +18,12 @@ params = {
     "language" : "auto" ,
     "autoplay" : True
 }
+
+def update( key : str , obj , main : gradio.Accordion ) -> None :
+    def func( value : str | float ) -> None :
+        params[ key ] = value
+        with shared.gradio[ "interface" ] : obj.value = value
+    obj.change( func , obj )
 
 def clear_output() -> None :
     shutil.rmtree( output )
@@ -39,14 +47,12 @@ def history_modifier( history : dict[ str , list[ list[ str ] ] ] ) -> dict[ str
     return history
 
 def ui() -> None :
-    with gradio.Accordion( "GPT-SoVITS-TTS" ) :
+    with gradio.Accordion( "GPT-SoVITS-TTS" ) as main :
         with gradio.Row() :
             autoplay = gradio.Checkbox( value = params[ "autoplay" ] , label = "autoplay" )
             api = gradio.Textbox( value = params[ "api" ] , label = "GPT-SoVITS API url" )
             language = gradio.Textbox( value = params[ "language" ] , label = "language" )
         with gradio.Row() :
             clear_cache = gradio.Button( value = "Clear cache"  )
-    autoplay.change( lambda value : params.update( { "autoplay" : value } ) , autoplay )
-    api.change( lambda value : params.update( { "api" : value } ) , api )
-    language.change( lambda value : params.update( { "language" : value } ) , language )
+    [ update( key , obj , main ) for key , obj in zip( params.keys() , [ api , language , autoplay ] ) ]
     clear_cache.click( clear_output )
